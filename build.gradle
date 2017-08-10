@@ -1,0 +1,84 @@
+// build script
+
+project.group = 'com.example'
+
+buildscript {
+
+    apply from: 'versions.gradle'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${versions.spring_boot}"
+    }
+}
+
+
+// spring
+
+apply plugin: 'org.springframework.boot'
+
+ext.mainClass = "com.example.MainClass"
+
+
+// java
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'src/main/java'
+        }
+    }
+}
+
+configurations {
+
+    checkerFrameworkAnnotatedJDK {
+        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+        description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${versions.spring_cloud}"
+	}
+}
+
+dependencies {
+
+    compile     group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+    compile     group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+
+	// CheckerFramework
+    checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${versions.checkerFramework}"
+    checkerFramework "org.checkerframework:checker:${versions.checkerFramework}"
+    compile "org.checkerframework:checker-qual:${versions.checkerFramework}"
+}
+
+
+// CheckerFramework
+
+allprojects {
+    tasks.withType(JavaCompile).all { compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}",
+                '-Awarns', // turns CheckerFramework errors into warnings
+        ]
+    }
+}

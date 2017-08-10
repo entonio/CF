@@ -1,0 +1,7 @@
+// versions
+
+ext.versions = new Object() {
+    final checkerFramework              =   '2.1.14'
+    final spring_boot                   =   '1.5.6.RELEASE'
+    final spring_cloud                  =   'Dalston.SR2'
+}
